@@ -2,6 +2,7 @@ services:
   - type: web
     name: yugkrit-sih
     runtime: python
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --access-logfile - --error-logfile - app:app
     healthCheckPath: /
@@ -13,6 +14,14 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: yugkrit-db
+          property: connectionString
       - key: WHATSAPP_PROVIDER
         value: cloud_api
+
+databases:
+  - name: yugkrit-db
+    databaseName: yugkrit
+    user: yugkrit
+    plan: free
