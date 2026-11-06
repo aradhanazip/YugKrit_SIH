@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: yugkrit-sih
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --access-logfile - --error-logfile - app:app
+    healthCheckPath: /
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: "0"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: WHATSAPP_PROVIDER
+        value: cloud_api

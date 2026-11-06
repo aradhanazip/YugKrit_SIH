@@ -14,7 +14,12 @@ def _database_uri():
     if not configured_uri:
         return f"sqlite:///{os.path.join(BASE_DIR, 'yugkrit.db')}"
 
-    if configured_uri.startswith("sqlite:///"):
+    # Render and some other hosts still provide the legacy postgres:// scheme;
+    # SQLAlchemy 2 requires postgresql://.
+    if configured_uri.startswith("postgres://"):
+        configured_uri = "postgresql://" + configured_uri[len("postgres://"):]
+
+    if configured_uri.startswith("sqlite:///" ):
         sqlite_path = configured_uri[len("sqlite:///"):]
         if sqlite_path and sqlite_path != ":memory:" and not os.path.isabs(sqlite_path):
             sqlite_path = os.path.abspath(os.path.join(BASE_DIR, sqlite_path))
@@ -31,8 +36,7 @@ class Config:
     PERMANENT_SESSION_LIFETIME = timedelta(hours=8)
 
     # --- Database ---
-    # SQLite for local dev. Structured so PostgreSQL can be swapped in later
-    # by simply changing DATABASE_URL in the .env file.
+    # SQLite for local dev. Set DATABASE_URL to PostgreSQL for hosted deployments.
     SQLALCHEMY_DATABASE_URI = _database_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
